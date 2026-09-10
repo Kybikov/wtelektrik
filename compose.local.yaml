@@ -1,0 +1,7 @@
+# Optional local Docker port publishing. Production uses Coolify's reverse proxy.
+services:
+  elektrik:
+    ports:
+      - "127.0.0.1:4317:4317"
+    environment:
+      COOKIE_SECURE: "false"

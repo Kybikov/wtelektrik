@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-10T08:08:35.321Z",
+  "title": "Design System: Elektrik",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm paper",
+        "tonalRamp": [
+          "oklch(15.00% 0.00930 113.16)",
+          "oklch(26.43% 0.00930 113.16)",
+          "oklch(37.86% 0.00930 113.16)",
+          "oklch(49.29% 0.00930 113.16)",
+          "oklch(60.71% 0.00930 113.16)",
+          "oklch(72.14% 0.00930 113.16)",
+          "oklch(83.57% 0.00930 113.16)",
+          "oklch(95.00% 0.00930 113.16)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Green ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.04052 155.83)",
+          "oklch(26.43% 0.04052 155.83)",
+          "oklch(37.86% 0.04052 155.83)",
+          "oklch(49.29% 0.04052 155.83)",
+          "oklch(60.71% 0.04052 155.83)",
+          "oklch(72.14% 0.04052 155.83)",
+          "oklch(83.57% 0.04052 155.83)",
+          "oklch(95.00% 0.04052 155.83)"
+        ]
+      },
+      "green": {
+        "role": "primary",
+        "displayName": "Forest green",
+        "tonalRamp": [
+          "oklch(15.00% 0.04862 172.08)",
+          "oklch(26.43% 0.04862 172.08)",
+          "oklch(37.86% 0.04862 172.08)",
+          "oklch(49.29% 0.04862 172.08)",
+          "oklch(60.71% 0.04862 172.08)",
+          "oklch(72.14% 0.04862 172.08)",
+          "oklch(83.57% 0.04862 172.08)",
+          "oklch(95.00% 0.04862 172.08)"
+        ]
+      },
+      "lime": {
+        "role": "primary",
+        "displayName": "Lime",
+        "tonalRamp": [
+          "oklch(15.00% 0.12870 120.93)",
+          "oklch(26.43% 0.12870 120.93)",
+          "oklch(37.86% 0.12870 120.93)",
+          "oklch(49.29% 0.12870 120.93)",
+          "oklch(60.71% 0.12870 120.93)",
+          "oklch(72.14% 0.12870 120.93)",
+          "oklch(83.57% 0.12870 120.93)",
+          "oklch(95.00% 0.12870 120.93)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Sage text",
+        "tonalRamp": [
+          "oklch(15.00% 0.03620 135.18)",
+          "oklch(26.43% 0.03620 135.18)",
+          "oklch(37.86% 0.03620 135.18)",
+          "oklch(49.29% 0.03620 135.18)",
+          "oklch(60.71% 0.03620 135.18)",
+          "oklch(72.14% 0.03620 135.18)",
+          "oklch(83.57% 0.03620 135.18)",
+          "oklch(95.00% 0.03620 135.18)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Sage rule",
+        "tonalRamp": [
+          "oklch(15.00% 0.02447 127.61)",
+          "oklch(26.43% 0.02447 127.61)",
+          "oklch(37.86% 0.02447 127.61)",
+          "oklch(49.29% 0.02447 127.61)",
+          "oklch(60.71% 0.02447 127.61)",
+          "oklch(72.14% 0.02447 127.61)",
+          "oklch(83.57% 0.02447 127.61)",
+          "oklch(95.00% 0.02447 127.61)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 89.88)",
+          "oklch(26.43% 0.00000 89.88)",
+          "oklch(37.86% 0.00000 89.88)",
+          "oklch(49.29% 0.00000 89.88)",
+          "oklch(60.71% 0.00000 89.88)",
+          "oklch(72.14% 0.00000 89.88)",
+          "oklch(83.57% 0.00000 89.88)",
+          "oklch(95.00% 0.00000 89.88)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Global heading baseline with explicit page and mobile overrides."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section and guide headings."
+      },
+      "title": {
+        "displayName": "Opportunity title",
+        "purpose": "First reading priority inside result rows."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default reading text."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Primary buttons and category chips."
+      }
+    },
+    "shadows": [
+      {
+        "name": "search-ambient",
+        "value": "0 4px 12px #203c2905",
+        "purpose": "Barely visible separation beneath search."
+      },
+      {
+        "name": "toast-overlay",
+        "value": "0 6px 24px #162e2526",
+        "purpose": "Floating feedback above page content."
+      }
+    ],
+    "motion": [
+      {
+        "name": "result-border",
+        "value": "border-color 0.18s",
+        "purpose": "Quiet hover feedback on opportunity surfaces."
+      },
+      {
+        "name": "intro-entry",
+        "value": "12px vertical translation; 0.5s; power3.out; no opacity fade",
+        "purpose": "One-time introductory heading entry, bypassed for reduced motion."
+      },
+      {
+        "name": "loading-pulse",
+        "value": "1.5s ease-in-out infinite",
+        "purpose": "Skeleton opacity cycle; disabled for reduced motion."
+      },
+      {
+        "name": "collection-spin",
+        "value": "1.5s linear infinite",
+        "purpose": "Collection progress icon; disabled for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone-max",
+        "value": "720px"
+      },
+      {
+        "name": "intermediate-max",
+        "value": "1050px"
+      },
+      {
+        "name": "wide-min",
+        "value": "1440px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid action for retries, collection and filter application.",
+      "html": "<button class=\"ds-primary\">Оновити джерела</button>",
+      "css": ".ds-primary{font-family:\"Manrope Variable\",Arial,sans-serif;line-height:1.5;display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:45px;padding:12px 19px;background:var(--green,#173e33);color:#fff;border:0;border-radius:6px;font-size:13px;cursor:pointer}.ds-primary:hover:not(:disabled){background:#285441}.ds-primary:disabled{opacity:.55;cursor:default}.ds-primary:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}"
+    },
+    {
+      "name": "Text action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Low-emphasis inline action for details and list utilities.",
+      "html": "<button class=\"ds-text\">Деталі</button>",
+      "css": ".ds-text{font-family:\"Manrope Variable\",Arial,sans-serif;line-height:1.5;display:inline-flex;gap:5px;align-items:center;font-size:12px;padding:8px 0;color:#4d6551;min-height:34px;border:0;background:none;cursor:pointer}.ds-text:hover{color:#132e1e;text-decoration:underline}.ds-text:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}"
+    },
+    {
+      "name": "Category chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Shared category and guide-tab control, with explicit selection.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"false\">Курси</button> <button class=\"ds-chip ds-selected\" aria-pressed=\"true\">Робота</button>",
+      "css": ".ds-chip{font-family:\"Manrope Variable\",Arial,sans-serif;line-height:1.5;padding:8px 15px;white-space:nowrap;border:1px solid #d4dacd;border-radius:5px;min-height:39px;font-size:13px;background:transparent;color:var(--ink,#203829);cursor:pointer}.ds-chip:hover{background:#e6eadf}.ds-chip.ds-selected{color:#fff;background:var(--green,#173e33);border-color:var(--green,#173e33)}.ds-chip:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}"
+    },
+    {
+      "name": "Filter field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Persistent external label and native select inside the filter area.",
+      "html": "<label class=\"ds-field\">Формат<select><option>Усі варіанти</option><option>Онлайн</option><option>На місці</option></select></label>",
+      "css": ".ds-field{font-family:\"Manrope Variable\",Arial,sans-serif;line-height:1.5;display:block;font-size:12px;font-weight:500;color:var(--ink,#203829)}.ds-field select{font:inherit;display:flex;width:100%;margin-top:8px;border:1px solid #cbd3c3;background:#fff;min-height:44px;border-radius:5px;color:var(--ink,#203829);padding:8px 26px 8px 10px;font-size:12px}.ds-field select:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}@media(max-width:720px){.ds-field{font-size:13px}.ds-field select{font-size:16px}}"
+    },
+    {
+      "name": "Desktop navigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Topbar task navigation with a filled current-page state.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Основна навігація\"><button aria-current=\"page\">Пошук</button><button>Збережене</button><button>Довідник</button></nav>",
+      "css": ".ds-nav{display:flex;gap:7px;align-items:center;background:var(--green,#173e33);padding:12px}.ds-nav button{font-family:\"Manrope Variable\",Arial,sans-serif;line-height:1.5;color:#c7d7cc;min-height:44px;padding:8px 15px;border-radius:6px;border:0;background:none;font-size:15px;cursor:pointer}.ds-nav button[aria-current]{background:#315747;color:#fff}.ds-nav button:hover{color:#fff}.ds-nav button:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}"
+    },
+    {
+      "name": "Opportunity surface",
+      "kind": "card",
+      "refersTo": "opportunity",
+      "description": "Title-led reading surface; sample text is illustrative, not a real listing.",
+      "html": "<article class=\"ds-opportunity\"><h3><a href=\"#\">Назва можливості</a></h3><p class=\"ds-company\">Організація</p><div class=\"ds-metadata\"><span>Місце не вказано</span><span>Формат не вказано</span></div></article>",
+      "css": ".ds-opportunity{font-family:\"Manrope Variable\",Arial,sans-serif;line-height:1.5;padding:22px 20px 17px;border:1px solid #d9dfd2;border-radius:7px;background:#fff;color:var(--ink,#203829);transition:border-color .18s}.ds-opportunity:hover{border-color:#99ac8f}.ds-opportunity h3{margin:0;font-size:20px;line-height:1.35;font-weight:600;letter-spacing:-.025em;overflow-wrap:anywhere}.ds-opportunity a{color:inherit;text-decoration:none;text-underline-offset:4px}.ds-opportunity a:hover{text-decoration:underline}.ds-opportunity a:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}.ds-company{font-size:13px;margin:5px 0 0;color:#54614e}.ds-metadata{display:flex;gap:10px 18px;flex-wrap:wrap;color:var(--secondary,#64725d);font-size:12px;margin-top:14px}@media(max-width:720px){.ds-opportunity{padding:17px 14px 12px}.ds-opportunity h3{font-size:18px;line-height:1.4;letter-spacing:-.02em}.ds-company{font-size:12px}.ds-metadata{font-size:11px;gap:7px 14px;margin-top:12px}}@media(prefers-reduced-motion:reduce){.ds-opportunity{transition:none}}"
+    },
+    {
+      "name": "Saved bookmark",
+      "kind": "button",
+      "description": "Bookmark toggle combines fill and pressed state with a pale surface.",
+      "html": "<button class=\"ds-save\" aria-label=\"Прибрати зі збережених\" aria-pressed=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"/></svg></button>",
+      "css": ".ds-save{width:38px;height:40px;display:grid;place-items:center;border:1px solid #dce1d5;border-radius:5px;color:#78836f;background:none;cursor:pointer}.ds-save:hover{background:#eff4e6;color:var(--green,#173e33)}.ds-save[aria-pressed=\"true\"]{background:#e9f2d8;color:var(--green,#173e33);border-color:#c8d8ae}.ds-save:focus-visible{outline:3px solid #6c8b32;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Regional transport departure board",
+    "overview": "The built interface borrows a departure board's ordered scanning and explicit state. Forest-green navigation frames a warm, pale reading field; opportunity titles lead, followed by organization and compact metadata. The world is expressed through typography, alignment, rules and selection states, without literal station scenery.\n\nThis is a restrained private tool with Ukrainian interface copy and original German opportunity names. Its repeated visual language is practical: small-radius controls, fine borders, white reading surfaces and clear text actions. The build uses green for primary actions; lime is a small identity accent, a narrower role than the direction contract's proposed action accent.\n\n**Key Characteristics:",
+    "keyCharacteristics": [
+      "Forest-green structure with warm paper and white reading surfaces.",
+      "One Manrope family, strongly differentiated by size and weight.",
+      "Title-first opportunity rows with wrapping metadata.",
+      "Persistent desktop filters and inline mobile filters.",
+      "Quiet surfaces with visible selected, saved and loading states."
+    ],
+    "rules": [
+      {
+        "name": "The Selection Contrast Rule",
+        "body": "Selected category controls pair a forest-green fill with white text; mobile navigation uses dark green on a pale green fill.",
+        "section": "colors"
+      },
+      {
+        "name": "The Title First Rule",
+        "body": "Opportunity titles are the strongest element inside each result; category, organization, place and dates remain supporting information.",
+        "section": "typography"
+      },
+      {
+        "name": "The Quiet Results Rule",
+        "body": "Result rows communicate interaction through border and text changes, while their content remains still.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep opportunity titles dominant and supporting metadata grouped beneath them.",
+      "**Do** use the shared green, paper and white palette before introducing contextual colors.",
+      "**Do** retain visible focus, selected and saved states with semantic attributes.",
+      "**Do** allow long German titles and metadata to wrap on phones.",
+      "**Do** keep source and date meaning explicit, including unknown values."
+    ],
+    "donts": [
+      "**Don't** make every result a raised or animated surface.",
+      "**Don't** encode selection, saved state or source health with color alone.",
+      "**Don't** turn the departure-board metaphor into unrelated station decoration."
+    ]
+  }
+}

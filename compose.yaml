@@ -1,0 +1,37 @@
+services:
+  elektrik:
+    build: .
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4317
+      DB_PATH: /app/runtime/elektrik.sqlite
+      BOTTOKEN: ${BOTTOKEN:?Set the Telegram bot token}
+      TELEGRAM_OWNER_IDS: ${TELEGRAM_OWNER_IDS:?Set allowed Telegram user IDs}
+      BOT_ENABLED: ${BOT_ENABLED:-true}
+      WEB_PASSWORD: ${WEB_PASSWORD:?Set a private web password of at least 20 characters}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:4317}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COLLECT_INTERVAL_MINUTES: ${COLLECT_INTERVAL_MINUTES:-120}
+      BA_PAGES_PER_QUERY: ${BA_PAGES_PER_QUERY:-2}
+      BA_PAGE_SIZE: ${BA_PAGE_SIZE:-50}
+    expose:
+      - "4317"
+    volumes:
+      - elektrik-data:/app/runtime
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4317/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  elektrik-data:

@@ -1,0 +1,26 @@
+name: Verify Elektrik
+on:
+  push:
+    branches: [dev, main, master]
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Validate Compose without production credentials
+        run: docker compose config --quiet
+        env:
+          BOTTOKEN: test-token-not-used
+          TELEGRAM_OWNER_IDS: 1
+          WEB_PASSWORD: ci-only-password-at-least-20-characters
+      - name: Build Docker image
+        run: docker build -t elektrik:ci .

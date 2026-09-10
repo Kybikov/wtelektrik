@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env*
+!.env.example
+runtime/
+*.log
+.impeccable/review/
+playwright-report/
+test-results/
+.playwright/
+.playwright-cli/
+output/
