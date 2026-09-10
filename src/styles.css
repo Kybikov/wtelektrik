@@ -940,6 +940,32 @@ footer {
 .login .primary {
   width: 100%;
 }
+.telegram-login {
+  margin-top: 28px;
+}
+.login .login-instructions {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.login-code {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+}
+.password-login {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.password-login summary {
+  cursor: pointer;
+  padding: 10px 0;
+  font-size: 14px;
+}
+.password-login form {
+  margin-top: 12px;
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);

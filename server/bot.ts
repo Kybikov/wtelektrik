@@ -3,6 +3,11 @@ import type { Collector } from "./collector.js";
 import { config } from "./config.js";
 import { kinds, categories, modes, travels } from "../shared/catalog.js";
 import type { Filters, Opportunity } from "../shared/types.js";
+import {
+  approveTelegramLogin,
+  loginCode,
+  pendingTelegramLogin,
+} from "./telegram-login.js";
 export const ownerAllowed = (id: number, chatType: string, owners: string[]) =>
   chatType === "private" && owners.includes(String(id));
 const escape = (v: string) =>
@@ -142,6 +147,20 @@ export class Bot {
       msg = callback?.message || update.message,
       user = callback?.from || msg?.from;
     if (
+      msg &&
+      user &&
+      msg.chat.type === "private" &&
+      msg.chat.id === user.id &&
+      !config.owners.includes(String(user.id)) &&
+      /^\/start(?:@\w+)?\s+login_/.test(String(msg.text || ""))
+    ) {
+      await this.send(
+        msg.chat.id,
+        "Для цього Telegram-акаунта доступ до Elektrik не відкритий. Звернися до власника сайту.",
+      );
+      return;
+    }
+    if (
       !msg ||
       !user ||
       !ownerAllowed(user.id, msg.chat.type, config.owners) ||
@@ -152,6 +171,24 @@ export class Bot {
     if (callback) {
       await this.api("answerCallbackQuery", { callback_query_id: callback.id });
       const [action, value] = String(callback.data || "").split(":");
+      if (action === "webok" || action === "webno") {
+        const approved = action === "webok";
+        const changed = approveTelegramLogin(
+          this.store,
+          value,
+          String(user.id),
+          approved,
+        );
+        await this.send(
+          chat,
+          !changed
+            ? "Цей запит уже використаний або прострочений. Створи новий на сайті."
+            : approved
+              ? "Вхід підтверджено. Повернися у вкладку браузера, де починав вхід — сайт відкриється автоматично."
+              : "Вхід відхилено.",
+        );
+        return;
+      }
       if (action === "page") {
         return this.results(chat, { ...this.filters(chat), page: value });
       }
@@ -207,6 +244,27 @@ export class Bot {
       [raw, ...rest] = text.split(/\s+/),
       command = raw.split("@")[0].toLowerCase(),
       arg = rest.join(" ");
+    if (command === "/start" && arg.startsWith("login_")) {
+      const token = arg.slice(6);
+      if (!pendingTelegramLogin(this.store, token)) {
+        await this.send(
+          chat,
+          "Запит входу прострочений або вже використаний. Створи новий на сайті.",
+        );
+        return;
+      }
+      await this.send(
+        chat,
+        `<b>Вхід на сайт Elektrik</b>\n\nКод: <b>${loginCode(token)}</b>\nЗвір його з кодом у своїй вкладці сайту. Підтверджуй лише вхід, який щойно почав сам.\n\nЗапит діє 5 хвилин.`,
+        [
+          [
+            { text: "Підтвердити вхід", callback_data: "webok:" + token },
+            { text: "Відхилити", callback_data: "webno:" + token },
+          ],
+        ],
+      );
+      return;
+    }
     if (command === "/start" || command === "/help") {
       await this.send(
         chat,

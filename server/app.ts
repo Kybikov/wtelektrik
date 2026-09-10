@@ -16,6 +16,13 @@ import {
 } from "./auth.js";
 import { sourceCatalog } from "./sources.js";
 import type { Filters } from "../shared/types.js";
+import {
+  browserLoginToken,
+  consumeTelegramLogin,
+  createTelegramLogin,
+  loginCookie,
+  loginLifetime,
+} from "./telegram-login.js";
 export function createApp(store: Store, collector: Collector, bot: Bot) {
   const app = express();
   app.disable("x-powered-by");
@@ -44,6 +51,84 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
     res.json({ authenticated: authorized(req), local: !config.password }),
   );
   const attempts = new Map<string, { n: number; until: number }>();
+  const sessionCookieOptions = {
+    httpOnly: true,
+    sameSite: "strict" as const,
+    secure: config.secure,
+    maxAge: 7 * 86400000,
+    path: "/",
+  };
+  const telegramAttempts = new Map<string, { n: number; until: number }>();
+  app.post("/api/login/telegram", (req, res) => {
+    if (!bot.username || !["running", "reconnecting"].includes(bot.status)) {
+      res.status(503).json({
+        error:
+          "Telegram-вхід тимчасово недоступний. Спробуй ще раз або увійди за паролем.",
+      });
+      return;
+    }
+    const now = Date.now(),
+      ip = req.socket.remoteAddress || "unknown";
+    for (const [key, value] of telegramAttempts)
+      if (value.until <= now) telegramAttempts.delete(key);
+    const attempt = telegramAttempts.get(ip);
+    if (attempt && attempt.n >= 30) {
+      res
+        .status(429)
+        .json({ error: "Забагато запитів входу. Спробуй через 15 хвилин." });
+      return;
+    }
+    telegramAttempts.set(ip, {
+      n: (attempt?.n || 0) + 1,
+      until: attempt?.until || now + 900000,
+    });
+    const login = createTelegramLogin(
+      store,
+      browserLoginToken(req.headers.cookie),
+    );
+    if (!login) {
+      res.status(429).json({ error: "Спробуй увійти трохи пізніше." });
+      return;
+    }
+    res
+      .cookie(loginCookie, login.browser, {
+        ...sessionCookieOptions,
+        maxAge: loginLifetime,
+      })
+      .json({
+        url: `https://t.me/${bot.username}?start=login_${login.token}`,
+        code: login.code,
+        expires: login.expires,
+      });
+  });
+  app.post("/api/login/telegram/check", (req, res) => {
+    const state = consumeTelegramLogin(
+      store,
+      browserLoginToken(req.headers.cookie),
+    );
+    if (state === "pending") {
+      res.status(202).json({ state });
+      return;
+    }
+    res.clearCookie(loginCookie, {
+      path: "/",
+      secure: config.secure,
+      sameSite: "strict",
+      httpOnly: true,
+    });
+    if (state === "approved")
+      res
+        .cookie("elektrik_session", createSession(store), sessionCookieOptions)
+        .json({ state });
+    else
+      res.status(state === "expired" ? 410 : 403).json({
+        state,
+        error:
+          state === "expired"
+            ? "Час входу минув. Створи новий запит."
+            : "Вхід відхилено або доступ до Telegram-акаунта не дозволений.",
+      });
+  });
   app.post("/api/login", (req, res) => {
     const ip = req.socket.remoteAddress || "unknown",
       now = Date.now();
@@ -65,13 +150,7 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
     }
     attempts.delete(ip);
     res
-      .cookie("elektrik_session", createSession(store), {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: config.secure,
-        maxAge: 7 * 86400000,
-        path: "/",
-      })
+      .cookie("elektrik_session", createSession(store), sessionCookieOptions)
       .json({ ok: true });
   });
   app.post("/api/logout", (req, res) => {

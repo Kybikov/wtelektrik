@@ -97,7 +97,71 @@ const initialFilters = (): Filters =>
 function Login({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState(""),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [telegram, setTelegram] = useState<{
+      url: string;
+      code: string;
+      expires: number;
+    } | null>(null),
+    [telegramError, setTelegramError] = useState(""),
+    [waiting, setWaiting] = useState(false),
+    [retry, setRetry] = useState(0);
+  useEffect(() => {
+    const abort = new AbortController();
+    setTelegram(null);
+    setTelegramError("");
+    setWaiting(false);
+    void api<{ url: string; code: string; expires: number }>(
+      "/login/telegram",
+      { method: "POST", body: "{}", signal: abort.signal },
+    )
+      .then(setTelegram)
+      .catch((e) => {
+        if (!abort.signal.aborted) setTelegramError((e as Error).message);
+      });
+    return () => abort.abort();
+  }, [retry]);
+  useEffect(() => {
+    if (!telegram || !waiting) return;
+    let stopped = false,
+      checking = false;
+    const check = async () => {
+      if (stopped || checking) return;
+      checking = true;
+      try {
+        const response = await fetch("/api/login/telegram/check", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+        });
+        const data = await response.json();
+        if (stopped) return;
+        if (response.ok && data.state === "approved") {
+          stopped = true;
+          onSuccess();
+        } else if (!response.ok) {
+          setTelegramError(data.error || "Не вдалося перевірити вхід.");
+          setTelegram(null);
+        }
+      } catch {
+        if (!stopped)
+          setTelegramError(
+            "Не вдалося перевірити вхід. Відновлюємо з’єднання…",
+          );
+      } finally {
+        checking = false;
+      }
+    };
+    const timer = window.setInterval(() => void check(), 2500);
+    const focus = () => void check();
+    window.addEventListener("focus", focus);
+    void check();
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", focus);
+    };
+  }, [telegram, waiting, onSuccess]);
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -128,30 +192,71 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
       <p>
         Робота й навчання в електротехніці.
         <br />
-        Доступ лише для власника.
+        Приватний доступ для дозволених користувачів.
       </p>
-      <form onSubmit={submit}>
-        <label>
-          Пароль доступу
-          <input
-            autoFocus
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        {error && (
+      <section className="telegram-login" aria-label="Вхід через Telegram">
+        {telegram ? (
+          <>
+            <a
+              className="primary"
+              href={telegram.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setWaiting(true)}
+            >
+              {waiting ? "Відкрити бота ще раз" : "Увійти через Telegram"}
+              <ArrowUpRight size={18} />
+            </a>
+            <p className="login-instructions" role="status">
+              {waiting
+                ? "Натисни Start у Telegram, підтвердь вхід у боті й повернися сюди."
+                : "Відкрий бота й підтвердь вхід. Код на сайті та в боті має збігатися."}
+              <strong className="login-code">Код: {telegram.code}</strong>
+            </p>
+          </>
+        ) : !telegramError ? (
+          <button className="primary" disabled>
+            Готуємо Telegram-вхід…
+          </button>
+        ) : null}
+        {telegramError && (
           <p role="alert" className="error">
-            {error}
+            {telegramError}
           </p>
         )}
-        <button className="primary" disabled={busy}>
-          {busy ? "Вхід…" : "Увійти"}
-          <ArrowRight size={18} />
-        </button>
-      </form>
+        {telegramError && (
+          <button
+            className="text-button"
+            onClick={() => setRetry((n) => n + 1)}
+          >
+            Спробувати ще раз
+          </button>
+        )}
+      </section>
+      <details className="password-login">
+        <summary>Увійти за паролем</summary>
+        <form onSubmit={submit}>
+          <label>
+            Пароль доступу
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+          {error && (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          )}
+          <button className="primary" disabled={busy}>
+            {busy ? "Вхід…" : "Увійти"}
+            <ArrowRight size={18} />
+          </button>
+        </form>
+      </details>
     </main>
   );
 }

@@ -16,6 +16,7 @@ export class Store {
  CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY, source TEXT NOT NULL, startedAt TEXT NOT NULL, finishedAt TEXT, status TEXT NOT NULL, fetched INTEGER DEFAULT 0, imported INTEGER DEFAULT 0, error TEXT);
  CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,expires INTEGER NOT NULL);
+ CREATE TABLE IF NOT EXISTS telegram_logins(token TEXT PRIMARY KEY,browser TEXT NOT NULL UNIQUE,expires INTEGER NOT NULL,state TEXT NOT NULL,user_id TEXT);
  `);
     this.db.exec(
       "UPDATE runs SET status='interrupted',finishedAt=datetime('now'),error='Процес зупинився до завершення збору' WHERE status='running'",
