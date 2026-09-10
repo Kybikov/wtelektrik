@@ -16,6 +16,8 @@ import {
 } from "./auth.js";
 import { sourceCatalog } from "./sources.js";
 import type { Filters } from "../shared/types.js";
+import { validateMiniAppData } from "./miniapp-auth.js";
+import { languageOf, translate } from "../shared/i18n.js";
 import {
   browserLoginToken,
   consumeTelegramLogin,
@@ -28,13 +30,25 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
   app.disable("x-powered-by");
   app.use(express.json({ limit: "12kb" }));
   app.use((req, res, next) => {
+    const json = res.json.bind(res);
+    res.json = (body) =>
+      json(
+        body && typeof body.error === "string"
+          ? {
+              ...body,
+              error: translate(
+                languageOf(req.get("accept-language")),
+                body.error,
+              ),
+            }
+          : body,
+      );
     res.set({
       "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
       "Referrer-Policy": "no-referrer",
       "Cache-Control": "no-store",
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "default-src 'self'; script-src 'self' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; base-uri 'self'; form-action 'self'",
     });
     if (req.path.startsWith("/api") && !originAllowed(req)) {
       res.status(403).json({ error: "Запит з іншого сайту заборонено" });
@@ -45,7 +59,7 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
   const authorized = (req: express.Request) =>
     !config.password ? localRequest(req) : hasSession(store, req);
   app.get("/api/health", (_req, res) =>
-    res.json({ ok: true, version: "0.1.1" }),
+    res.json({ ok: true, version: "0.2.0" }),
   );
   app.get("/api/session", (req, res) =>
     res.json({ authenticated: authorized(req), local: !config.password }),
@@ -59,6 +73,33 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
     path: "/",
   };
   const telegramAttempts = new Map<string, { n: number; until: number }>();
+  app.post("/api/login/miniapp", (req, res) => {
+    const user = validateMiniAppData(
+      req.body?.initData,
+      config.token,
+      config.owners,
+    );
+    if (!user) {
+      res.status(403).json({
+        error:
+          "Не вдалося підтвердити доступ Telegram. Закрий застосунок і відкрий його з меню бота.",
+      });
+      return;
+    }
+    const profile = store.read<{ language?: string }>("profile:" + user.id, {});
+    const token = createSession(store);
+    res
+      .cookie("elektrik_session", token, {
+        ...sessionCookieOptions,
+        sameSite: config.secure ? "none" : "strict",
+      })
+      .json({
+        ok: true,
+        token,
+        language: languageOf(profile.language || user.language_code),
+        filters: store.read<Filters>("filters:" + user.id, {}),
+      });
+  });
   app.post("/api/login/telegram", (req, res) => {
     if (!bot.username || !["running", "reconnecting"].includes(bot.status)) {
       res.status(503).json({
@@ -142,7 +183,7 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
     }
     if (
       !config.password ||
-      !constantEqual(String(req.body.password || ""), config.password)
+      !constantEqual(String(req.body?.password || ""), config.password)
     ) {
       attempts.set(ip, { n: (a?.n || 0) + 1, until: a?.until || now + 900000 });
       res.status(401).json({ error: "Неправильний пароль" });

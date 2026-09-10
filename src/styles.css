@@ -1349,3 +1349,196 @@ footer {
     transition: none !important;
   }
 }
+.language-switch {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 8px max(20px, calc((100vw - 1240px) / 2));
+  background: var(--green);
+  color: white;
+  min-height: 44px;
+}
+.language-switch button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+}
+.language-switch button[aria-pressed="true"] {
+  border-color: #729588;
+  background: #244c40;
+}
+.picker-field {
+  position: relative;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+.picker-field > label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #bdc8b7;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 13px;
+}
+.picker-trigger > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.picker-trigger[aria-expanded="true"],
+.picker-location:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px #173e3314;
+}
+.picker-location {
+  padding: 0 10px;
+}
+.picker-location input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 12px 0;
+  font-size: 14px;
+  outline: none;
+}
+.picker-clear {
+  border: 0;
+  background: transparent;
+  padding: 6px;
+  display: flex;
+}
+.picker-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: max(100%, 280px);
+  max-width: calc(100vw - 48px);
+  z-index: 35;
+}
+.picker-content {
+  border: 1px solid #bdc8b7;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 30px #173e3324;
+  overflow: hidden;
+}
+.picker-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e4e9df;
+}
+.picker-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  font-size: 14px;
+  background: transparent;
+  outline: none;
+}
+.picker-options {
+  max-height: min(264px, 40dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+}
+.picker-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.picker-options button span {
+  overflow-wrap: anywhere;
+}
+.picker-options button:hover,
+.picker-options button.highlighted {
+  background: #eef3e8;
+}
+.picker-options button[aria-selected="true"] {
+  background: #e5eddd;
+  color: #173e33;
+  font-weight: 650;
+}
+.picker-hint,
+.picker-empty {
+  font-size: 11px;
+  padding: 10px 12px;
+  color: #667362;
+}
+.picker-hint {
+  border-top: 1px solid #e4e9df;
+}
+.picker-done {
+  width: calc(100% - 16px);
+  margin: 4px 8px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--green);
+  color: white;
+  padding: 9px;
+  font-size: 13px;
+}
+.picker-field.disabled {
+  opacity: 0.55;
+}
+.telegram-miniapp body {
+  padding-top: var(--telegram-safe-top, 0px);
+  padding-left: var(--telegram-safe-left, 0px);
+  padding-right: var(--telegram-safe-right, 0px);
+  padding-bottom: var(--telegram-safe-bottom, 0px);
+}
+.telegram-miniapp .bottom-nav {
+  bottom: var(--telegram-safe-bottom, 0px);
+}
+@media (max-width: 640px) {
+  .language-switch {
+    padding: 6px 14px;
+  }
+  .picker-popup {
+    width: 100%;
+  }
+  .picker-search input,
+  .picker-location input {
+    font-size: 16px;
+  }
+}
+.picker-popup.above {
+  top: auto;
+  bottom: calc(100% - 18px);
+}
+.telegram-miniapp .mobile-nav {
+  bottom: var(--telegram-safe-bottom, 0px);
+  left: var(--telegram-safe-left, 0px);
+  right: var(--telegram-safe-right, 0px);
+}

@@ -1,3 +1,4 @@
+import { de as german } from "./de.js";
 export const kinds = [
   [
     "work",
@@ -89,7 +90,13 @@ export const kinds = [
     "Anpassungsqualifizierung",
     "Навчання для усунення відмінностей іноземної кваліфікації.",
   ],
-].map(([id, label, de, description]) => ({ id, label, de, description }));
+].map(([id, label, de, description]) => ({
+  id,
+  label: german[label] || label,
+  ukLabel: label,
+  de,
+  description,
+}));
 
 export const categories = [
   [
@@ -184,7 +191,8 @@ export const categories = [
   ],
 ].map(([id, label, names, patterns]) => ({
   id,
-  label,
+  label: german[label] || label,
+  ukLabel: label,
   names: names.split("|"),
   patterns: patterns.split("|"),
 }));

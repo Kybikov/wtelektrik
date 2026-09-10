@@ -24,6 +24,8 @@ export function originAllowed(req: Request) {
   }
 }
 export function sessionToken(req: Request) {
+  const bearer = req.get("authorization");
+  if (bearer?.startsWith("Bearer ")) return bearer.slice(7);
   return (
     (req.headers.cookie || "")
       .split(";")

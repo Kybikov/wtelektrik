@@ -89,7 +89,9 @@ export class Store {
           !["fur", "und", "der", "die", "das", "in", "m", "w", "d"].includes(t),
       );
     const matchedCategories = categories
-      .filter((c) => q.length > 3 && norm(c.label).includes(q))
+      .filter(
+        (c) => q.length > 3 && norm(c.label + " " + c.ukLabel).includes(q),
+      )
       .map((c) => c.id);
     const rows = this.all()
       .filter((o) => {
@@ -100,8 +102,11 @@ export class Store {
           (!q ||
             tokens.every((t) => haystack.includes(t)) ||
             matchedCategories.some((c) => o.categories.includes(c))) &&
-          (!f.kind || o.kind === f.kind) &&
-          (!f.category || o.categories.includes(f.category)) &&
+          (!f.kind || f.kind.split(",").includes(o.kind)) &&
+          (!f.category ||
+            f.category
+              .split(",")
+              .some((category) => o.categories.includes(category))) &&
           (!loc || norm(o.location || "").includes(loc)) &&
           (f.unknownLocation !== "true" || !o.location) &&
           (!f.mode || o.mode === f.mode) &&

@@ -1,3 +1,8 @@
+import { miniAppHeaders, startMiniApp } from "./miniapp";
+import { setLanguage } from "./i18n";
+import { Picker } from "./components/Picker";
+import { citySuggestions } from "../shared/locations";
+import { t, locale, getLanguage, useLanguage, LanguageSwitch } from "./i18n";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   ArrowDown,
@@ -63,22 +68,27 @@ interface Results {
 async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const r = await fetch("/api" + path, {
     ...options,
-    headers: { "content-type": "application/json", ...options.headers },
+    headers: {
+      "content-type": "application/json",
+      "accept-language": getLanguage(),
+      ...miniAppHeaders(),
+      ...options.headers,
+    },
   });
   if (r.status === 401) {
     window.dispatchEvent(new Event("session-expired"));
-    throw new Error("Сеанс завершився. Увійди ще раз.");
+    throw new Error(t("Сеанс завершився. Увійди ще раз."));
   }
   const data = await r.json();
-  if (!r.ok) throw new Error(data.error || "Не вдалося отримати дані");
+  if (!r.ok) throw new Error(data.error || t("Не вдалося отримати дані"));
   return data;
 }
 const date = (value: string) =>
-  new Intl.DateTimeFormat("uk", { day: "numeric", month: "short" }).format(
+  new Intl.DateTimeFormat(locale(), { day: "numeric", month: "short" }).format(
     new Date(value),
   );
 const label = (list: { id: string; label: string }[], id: string) =>
-  list.find((x) => x.id === id)?.label || id;
+  t(list.find((x) => x.id === id)?.label || id);
 const initialFilters = (): Filters =>
   Object.fromEntries(
     [...new URLSearchParams(location.search)].filter(([k]) =>
@@ -140,13 +150,13 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
           stopped = true;
           onSuccess();
         } else if (!response.ok) {
-          setTelegramError(data.error || "Не вдалося перевірити вхід.");
+          setTelegramError(data.error || t("Не вдалося перевірити вхід."));
           setTelegram(null);
         }
       } catch {
         if (!stopped)
           setTelegramError(
-            "Не вдалося перевірити вхід. Відновлюємо з’єднання…",
+            t("Не вдалося перевірити вхід. Відновлюємо з’єднання…"),
           );
       } finally {
         checking = false;
@@ -181,20 +191,20 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
   return (
     <main className="login">
       <div className="wordmark">
-        <Zap /> elektrik<span>приватний пошук</span>
+        <Zap /> elektrik<span>{t("приватний пошук")}</span>
       </div>
       <ShieldCheck size={42} />
       <h1>
-        Твій простір
+        {t("Твій простір")}
         <br />
-        можливостей.
+        {t("можливостей.")}
       </h1>
       <p>
-        Робота й навчання в електротехніці.
+        {t("Робота й навчання в електротехніці.")}
         <br />
-        Приватний доступ для дозволених користувачів.
+        {t("Приватний доступ для дозволених користувачів.")}
       </p>
-      <section className="telegram-login" aria-label="Вхід через Telegram">
+      <section className="telegram-login" aria-label={t("Вхід через Telegram")}>
         {telegram ? (
           <>
             <a
@@ -204,24 +214,31 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
               rel="noopener noreferrer"
               onClick={() => setWaiting(true)}
             >
-              {waiting ? "Відкрити бота ще раз" : "Увійти через Telegram"}
+              {waiting ? t("Відкрити бота ще раз") : t("Увійти через Telegram")}
               <ArrowUpRight size={18} />
             </a>
             <p className="login-instructions" role="status">
               {waiting
-                ? "Натисни Start у Telegram, підтвердь вхід у боті й повернися сюди."
-                : "Відкрий бота й підтвердь вхід. Код на сайті та в боті має збігатися."}
-              <strong className="login-code">Код: {telegram.code}</strong>
+                ? t(
+                    "Натисни Start у Telegram, підтвердь вхід у боті й повернися сюди.",
+                  )
+                : t(
+                    "Відкрий бота й підтвердь вхід. Код на сайті та в боті має збігатися.",
+                  )}
+              <strong className="login-code">
+                {t("Код: ")}
+                {telegram.code}
+              </strong>
             </p>
           </>
         ) : !telegramError ? (
           <button className="primary" disabled>
-            Готуємо Telegram-вхід…
+            {t("Готуємо Telegram-вхід…")}
           </button>
         ) : null}
         {telegramError && (
           <p role="alert" className="error">
-            {telegramError}
+            {t(telegramError)}
           </p>
         )}
         {telegramError && (
@@ -229,15 +246,15 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
             className="text-button"
             onClick={() => setRetry((n) => n + 1)}
           >
-            Спробувати ще раз
+            {t("Спробувати ще раз")}
           </button>
         )}
       </section>
       <details className="password-login">
-        <summary>Увійти за паролем</summary>
+        <summary>{t("Увійти за паролем")}</summary>
         <form onSubmit={submit}>
           <label>
-            Пароль доступу
+            {t("Пароль доступу")}
             <input
               type="password"
               autoComplete="current-password"
@@ -248,11 +265,11 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
           </label>
           {error && (
             <p role="alert" className="error">
-              {error}
+              {t(error)}
             </p>
           )}
           <button className="primary" disabled={busy}>
-            {busy ? "Вхід…" : "Увійти"}
+            {busy ? t("Вхід…") : t("Увійти")}
             <ArrowRight size={18} />
           </button>
         </form>
@@ -262,6 +279,15 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
 }
 
 export default function App() {
+  useLanguage();
+  return (
+    <>
+      <LanguageSwitch />
+      <Workspace />
+    </>
+  );
+}
+function Workspace() {
   const [session, setSession] = useState<boolean | null>(null),
     [sessionError, setSessionError] = useState("");
   const [tab, setTab] = useState<Tab>("search"),
@@ -285,15 +311,31 @@ export default function App() {
   );
   const loadSession = useCallback(() => {
     setSessionError("");
-    fetch("/api/session")
-      .then((r) => {
-        if (!r.ok) throw new Error();
-        return r.json();
-      })
-      .then((s) => setSession(s.authenticated))
-      .catch(() =>
-        setSessionError("Сервер недоступний. Перевір, чи запущено Elektrik."),
-      );
+    void (async () => {
+      try {
+        const mini = await startMiniApp();
+        if (mini) {
+          setLanguage(mini.language);
+          setFilters(mini.filters);
+          setQuery(mini.filters.q || "");
+          setSession(true);
+          return;
+        }
+        const response = await fetch("/api/session", {
+          headers: miniAppHeaders(),
+        });
+        if (!response.ok)
+          throw new Error(
+            t("Сервер недоступний. Перевір, чи запущено Elektrik."),
+          );
+        setSession((await response.json()).authenticated);
+      } catch (error) {
+        setSessionError(
+          (error as Error).message ||
+            t("Сервер недоступний. Перевір, чи запущено Elektrik."),
+        );
+      }
+    })();
   }, []);
   useEffect(() => {
     loadSession();
@@ -379,7 +421,7 @@ export default function App() {
     setStarting(true);
     try {
       await api("/collect", { method: "POST" });
-      setNotice("Збір запущено. Нові результати додаються поступово.");
+      setNotice(t("Збір запущено. Нові результати додаються поступово."));
       loadStatus();
     } catch (e) {
       setNotice((e as Error).message);
@@ -415,19 +457,19 @@ export default function App() {
     ([k, v]) => v && k !== "page" && k !== "q",
   ).length;
   const nav = [
-    { id: "search" as Tab, name: "Знайти", icon: Search },
-    { id: "saved" as Tab, name: "Збережене", icon: Bookmark },
-    { id: "guide" as Tab, name: "Довідник", icon: BookOpen },
-    { id: "sources" as Tab, name: "Джерела", icon: Radio },
+    { id: "search" as Tab, name: t("Знайти"), icon: Search },
+    { id: "saved" as Tab, name: t("Збережене"), icon: Bookmark },
+    { id: "guide" as Tab, name: t("Довідник"), icon: BookOpen },
+    { id: "sources" as Tab, name: t("Джерела"), icon: Radio },
   ];
   if (sessionError)
     return (
       <main className="login">
         <Zap />
-        <h1>Немає зв’язку</h1>
-        <p role="alert">{sessionError}</p>
+        <h1>{t("Немає зв’язку")}</h1>
+        <p role="alert">{t(sessionError)}</p>
         <button className="primary" onClick={loadSession}>
-          Спробувати ще раз
+          {t("Спробувати ще раз")}
         </button>
       </main>
     );
@@ -435,23 +477,24 @@ export default function App() {
     return (
       <main className="login">
         <Zap />
-        <p role="status">Відкриваємо твій простір…</p>
+        <p role="status">{t("Відкриваємо твій простір…")}</p>
       </main>
     );
   if (!session) return <Login onSuccess={() => setSession(true)} />;
   return (
     <div className="app">
       <a className="skip" href="#content">
-        Перейти до результатів
+        {t("Перейти до результатів")}
       </a>
       <header className="topbar">
-        <a href="/" className="wordmark" aria-label="Elektrik — головна">
+        <a href="/" className="wordmark" aria-label={t("Elektrik — головна")}>
           <span className="logo">
             <Zap size={22} fill="currentColor" />
           </span>
-          elektrik<span className="brand-caption">робота & навчання</span>
+          elektrik
+          <span className="brand-caption">{t("робота & навчання")}</span>
         </a>
-        <nav className="desktop-nav" aria-label="Основна навігація">
+        <nav className="desktop-nav" aria-label={t("Основна навігація")}>
           {nav.map((n) => (
             <button
               key={n.id}
@@ -468,7 +511,7 @@ export default function App() {
         </nav>
         <span className="private-label">
           <ShieldCheck size={15} />
-          Приватний простір
+          {t("Приватний простір")}
         </span>
       </header>
       <main id="content" className="main">
@@ -479,12 +522,12 @@ export default function App() {
                 {reducedMotion ? (
                   <h1>
                     {tab === "saved" ? (
-                      "Те, що варте уваги."
+                      t("Те, що варте уваги.")
                     ) : (
                       <>
-                        Знайди свій
+                        {t("Знайди свій")}
                         <br />
-                        <span>наступний крок.</span>
+                        <span>{t("наступний крок.")}</span>
                       </>
                     )}
                   </h1>
@@ -497,12 +540,12 @@ export default function App() {
                   >
                     <h1>
                       {tab === "saved" ? (
-                        "Те, що варте уваги."
+                        t("Те, що варте уваги.")
                       ) : (
                         <>
-                          Знайди свій
+                          {t("Знайди свій")}
                           <br />
-                          <span>наступний крок.</span>
+                          <span>{t("наступний крок.")}</span>
                         </>
                       )}
                     </h1>
@@ -510,8 +553,10 @@ export default function App() {
                 )}
                 <p>
                   {tab === "saved"
-                    ? "Твої збережені вакансії, курси та навчальні програми."
-                    : "Від першої роботи до нової кваліфікації. Можливості з перевірених джерел по всій Німеччині."}
+                    ? t("Твої збережені вакансії, курси та навчальні програми.")
+                    : t(
+                        "Від першої роботи до нової кваліфікації. Можливості з перевірених джерел по всій Німеччині.",
+                      )}
                 </p>
               </div>
               <div className="territory">
@@ -519,27 +564,27 @@ export default function App() {
                   <Compass size={42} strokeWidth={1} />
                 </div>
                 <strong>Deutschland</strong>
-                <span>Усі землі · усі напрями</span>
+                <span>{t("Усі землі · усі напрями")}</span>
                 <small>
                   <span className="status-dot" />{" "}
                   {status?.collecting
-                    ? "Збираємо можливості"
-                    : "Твій особистий пошук"}
+                    ? t("Збираємо можливості")
+                    : t("Твій особистий пошук")}
                 </small>
               </div>
             </section>
             <div className="searchbar">
               <Search size={22} />
               <input
-                aria-label="Пошук професії, компанії або навички"
-                placeholder="Професія, компанія або навичка…"
+                aria-label={t("Пошук професії, компанії або навички")}
+                placeholder={t("Професія, компанія або навичка…")}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
               {query && (
                 <button
                   className="icon-button"
-                  aria-label="Очистити пошук"
+                  aria-label={t("Очистити пошук")}
                   onClick={() => setQuery("")}
                 >
                   <X size={18} />
@@ -550,25 +595,30 @@ export default function App() {
                 className="filter-toggle"
                 aria-label={
                   activeCount
-                    ? `Фільтри пошуку: ${activeCount} активних`
-                    : "Фільтри пошуку"
+                    ? t("Фільтри пошуку: {count} активних", {
+                        count: activeCount,
+                      })
+                    : t("Фільтри пошуку")
                 }
                 aria-expanded={filtersOpen}
                 aria-controls="filters"
                 onClick={() => setFiltersOpen((o) => !o)}
               >
                 <SlidersHorizontal size={19} />
-                <span>Фільтри{activeCount ? " · " + activeCount : ""}</span>
+                <span>
+                  {t("Фільтри")}
+                  {activeCount ? " · " + activeCount : ""}
+                </span>
               </button>
             </div>
-            <div className="quick-types" aria-label="Швидкий вибір типу">
+            <div className="quick-types" aria-label={t("Швидкий вибір типу")}>
               {[
-                ["", "Усе"],
-                ["work", "Робота"],
+                ["", t("Усе")],
+                ["work", "Stellenangebote"],
                 ["ausbildung", "Ausbildung"],
                 ["weiterbildung", "Weiterbildung"],
-                ["course", "Курси"],
-                ["umschulung", "Перенавчання"],
+                ["course", "Kurse"],
+                ["umschulung", "Umschulung"],
               ].map(([id, name]) => (
                 <button
                   key={id}
@@ -591,32 +641,25 @@ export default function App() {
                 <div className="filter-heading">
                   <h2>
                     <Filter size={17} />
-                    Уточнити пошук
+                    {t("Уточнити пошук")}
                   </h2>
                   {activeCount > 0 && (
                     <button className="text-button" onClick={reset}>
-                      Скинути
+                      {t("Скинути")}
                     </button>
                   )}
                 </div>
-                <label>
-                  Місто або індекс
-                  <div className="location-input">
-                    <MapPin size={17} />
-                    <input
-                      placeholder="Наприклад, Berlin"
-                      list="cities"
-                      value={filters.location || ""}
-                      disabled={filters.unknownLocation === "true"}
-                      onChange={(e) => update("location", e.target.value)}
-                    />
-                  </div>
-                </label>
-                <datalist id="cities">
-                  {status?.stats.locations.slice(0, 300).map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
+                <Picker
+                  label={t("Місто або індекс")}
+                  value={filters.location}
+                  freeText
+                  disabled={filters.unknownLocation === "true"}
+                  options={citySuggestions(
+                    status?.stats.locations || [],
+                    filters.location || "",
+                  ).map((city) => ({ id: city, label: city }))}
+                  onChange={(v) => update("location", v)}
+                />
                 <label className="checkbox">
                   <input
                     type="checkbox"
@@ -625,50 +668,53 @@ export default function App() {
                       update("unknownLocation", e.target.checked ? "true" : "")
                     }
                   />
-                  Тільки місце не вказано
+                  {t("Тільки місце не вказано")}
                 </label>
                 <Select
-                  label="Тип можливості"
+                  label={t("Тип можливості")}
                   value={filters.kind}
                   options={kinds}
                   onChange={(v) => update("kind", v)}
                 />
                 <Select
-                  label="Професійний напрям"
+                  label={t("Професійний напрям")}
                   value={filters.category}
                   options={categories}
                   onChange={(v) => update("category", v)}
                 />
                 <Select
-                  label="Онлайн / офлайн"
+                  label={t("Онлайн / офлайн")}
                   value={filters.mode}
                   options={modes}
                   onChange={(v) => update("mode", v)}
                 />
                 <Select
-                  label="Поїздки та відрядження"
+                  label={t("Поїздки та відрядження")}
                   value={filters.travel}
                   options={travels}
                   onChange={(v) => update("travel", v)}
                 />
                 <p className="filter-note">
-                  Місце, формат і поїздки — незалежні умови. Якщо джерело їх не
-                  вказало, ми їх не вгадуємо.
+                  {t(
+                    "Місце, формат і поїздки — незалежні умови. Якщо джерело їх не вказало, ми їх не вгадуємо.",
+                  )}
                 </p>
                 <button
                   className="primary mobile-apply"
                   onClick={() => setFiltersOpen(false)}
                 >
-                  Показати результати
+                  {t("Показати результати")}
                   <ArrowDown size={16} />
                 </button>
               </aside>
-              <section className="results" aria-label="Можливості">
+              <section className="results" aria-label={t("Можливості")}>
                 <div className="results-heading">
                   <h2>
-                    {tab === "saved" ? "Збережені можливості" : "Можливості"}{" "}
+                    {tab === "saved"
+                      ? t("Збережені можливості")
+                      : t("Можливості")}{" "}
                     <span>
-                      {loading ? "…" : results.total.toLocaleString("uk")}
+                      {loading ? "…" : results.total.toLocaleString(locale())}
                     </span>
                   </h2>
                   <button
@@ -677,37 +723,37 @@ export default function App() {
                       setRefreshKey((k) => k + 1);
                       loadStatus();
                     }}
-                    title="Оновити список"
+                    title={t("Оновити список")}
                   >
                     <RefreshCw
                       size={14}
                       className={loading ? "spinning" : ""}
                     />
-                    <span>Оновити</span>
+                    <span>{t("Оновити")}</span>
                   </button>
                 </div>
                 <div className="result-context">
                   <span>
                     {filters.unknownLocation === "true"
-                      ? "Місце не вказано"
-                      : filters.location || "Вся Німеччина"}
+                      ? t("Місце не вказано")
+                      : filters.location || t("Вся Німеччина")}
                     {filters.mode ? " · " + label(modes, filters.mode) : ""}
                     {filters.travel
                       ? " · " + label(travels, filters.travel)
                       : ""}
                   </span>
-                  <span>Новіші спочатку</span>
+                  <span>{t("Новіші спочатку")}</span>
                 </div>
                 {error ? (
                   <div className="empty">
                     <Radio />
-                    <h3>Не вдалося завантажити</h3>
+                    <h3>{t("Не вдалося завантажити")}</h3>
                     <p role="alert">{error}</p>
                     <button
                       className="primary"
                       onClick={() => setRefreshKey((k) => k + 1)}
                     >
-                      Повторити
+                      {t("Повторити")}
                     </button>
                   </div>
                 ) : loading ? (
@@ -715,7 +761,7 @@ export default function App() {
                     <div className="skeleton" />
                     <div className="skeleton" />
                     <div className="skeleton" />
-                    <span>Шукаємо можливості…</span>
+                    <span>{t("Шукаємо можливості…")}</span>
                   </div>
                 ) : results.items.length ? (
                   results.items.map((o) => (
@@ -730,15 +776,19 @@ export default function App() {
                     <Search size={32} />
                     <h3>
                       {tab === "saved"
-                        ? "Збережи те, що зацікавило"
-                        : "Поки немає збігів"}
+                        ? t("Збережи те, що зацікавило")
+                        : t("Поки немає збігів")}
                     </h3>
                     <p>
                       {tab === "saved"
-                        ? "Натисни закладку біля вакансії або курсу — вони з’являться тут."
+                        ? t(
+                            "Натисни закладку біля вакансії або курсу — вони з’являться тут.",
+                          )
                         : status?.collecting
-                          ? "Джерела ще збираються. Онови список за хвилину."
-                          : "Спробуй іншу професію, прибери частину фільтрів або запусти збір джерел."}
+                          ? t("Джерела ще збираються. Онови список за хвилину.")
+                          : t(
+                              "Спробуй іншу професію, прибери частину фільтрів або запусти збір джерел.",
+                            )}
                     </p>
                     <button
                       className="primary"
@@ -749,10 +799,10 @@ export default function App() {
                       }}
                     >
                       {tab === "saved"
-                        ? "Перейти до пошуку"
+                        ? t("Перейти до пошуку")
                         : status?.stats.total
-                          ? "Скинути фільтри"
-                          : "Зібрати можливості"}
+                          ? t("Скинути фільтри")
+                          : t("Зібрати можливості")}
                       <ArrowRight size={16} />
                     </button>
                   </div>
@@ -764,7 +814,7 @@ export default function App() {
                       onClick={() => update("page", String(results.page - 1))}
                     >
                       <ChevronLeft size={16} />
-                      Назад
+                      {t("Назад")}
                     </button>
                     <span>
                       {results.page} / {results.pages}
@@ -773,14 +823,16 @@ export default function App() {
                       disabled={results.page === results.pages}
                       onClick={() => update("page", String(results.page + 1))}
                     >
-                      Далі
+                      {t("Далі")}
                       <ChevronRight size={16} />
                     </button>
                   </div>
                 )}
                 <p className="coverage-note">
-                  {status?.coverage ||
-                    "Збираємо лише реальні пропозиції з відкритих джерел."}
+                  {t(
+                    status?.coverage ||
+                      t("Збираємо лише реальні пропозиції з відкритих джерел."),
+                  )}
                 </p>
               </section>
             </div>
@@ -791,9 +843,11 @@ export default function App() {
           <section className="sources-page">
             <div className="page-title">
               <div>
-                <h1>Звідки можливості.</h1>
+                <h1>{t("Звідки можливості.")}</h1>
                 <p>
-                  Що вже збирається автоматично, а де можна продовжити пошук.
+                  {t(
+                    "Що вже збирається автоматично, а де можна продовжити пошук.",
+                  )}
                 </p>
               </div>
               <button
@@ -805,7 +859,7 @@ export default function App() {
                   size={17}
                   className={status?.collecting ? "spinning" : ""}
                 />
-                {status?.collecting ? "Збираємо…" : "Оновити джерела"}
+                {status?.collecting ? t("Збираємо…") : t("Оновити джерела")}
               </button>
             </div>
             <div className="connection-bar">
@@ -818,8 +872,18 @@ export default function App() {
                 />
                 Telegram:{" "}
                 {status?.bot.status === "running"
-                  ? "підключено"
-                  : status?.bot.status || "перевіряємо"}
+                  ? t("підключено")
+                  : t(
+                      (
+                        {
+                          disabled: "Вимкнено",
+                          reconnecting: "Повторне підключення",
+                          owner_required: "Потрібен дозволений користувач",
+                          webhook_conflict: "Конфлікт webhook",
+                          error: "Помилка",
+                        } as Record<string, string>
+                      )[status?.bot.status || ""] || "перевіряємо",
+                    )}
               </span>
               <a
                 href={
@@ -829,14 +893,14 @@ export default function App() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Відкрити бота
+                {t("Відкрити бота")}
                 <ArrowUpRight size={15} />
               </a>
             </div>
             <p className="source-explanation">
-              Автоматичний збір охоплює підключені джерела, а не весь інтернет.
-              Великі каталоги переглядаються частинами; наступні запуски додають
-              інші сторінки. Вакансії можуть закриватися — перевіряй оригінал.
+              {t(
+                "Автоматичний збір охоплює підключені джерела, а не весь інтернет. Великі каталоги переглядаються частинами; наступні запуски додають інші сторінки. Вакансії можуть закриватися — перевіряй оригінал.",
+              )}
             </p>
             {status?.sources.map((s) => {
               const run = status.runs.find((r) => r.source === s.id);
@@ -849,9 +913,9 @@ export default function App() {
                         <ArrowUpRight size={17} />
                       </a>
                     </h2>
-                    <span className="type-label">{s.type}</span>
-                    <p>{s.description}</p>
-                    {run?.error && <p className="error">{run.error}</p>}
+                    <span className="type-label">{t(s.type)}</span>
+                    <p>{t(s.description)}</p>
+                    {run?.error && <p className="error">{t(run.error)}</p>}
                   </div>
                   <div className="source-status">
                     {run ? (
@@ -859,26 +923,28 @@ export default function App() {
                         <span className={"run-status " + run.status}>
                           {(
                             {
-                              ok: "Працює",
-                              partial: "Частково",
-                              error: "Помилка",
-                              running: "Збираємо",
-                              interrupted: "Перервано",
+                              ok: t("Працює"),
+                              partial: t("Частково"),
+                              error: t("Помилка"),
+                              running: t("Збираємо"),
+                              interrupted: t("Перервано"),
                             } as Record<string, string>
                           )[run.status] || run.status}
                         </span>
                         <strong>
-                          {run.fetched} <small>знайдено</small>
+                          {run.fetched} <small>{t("знайдено")}</small>
                         </strong>
                         <span>
-                          {run.imported} нових · {date(run.startedAt)}
+                          {run.imported}
+                          {t(" нових · ")}
+                          {date(run.startedAt)}
                         </span>
                       </>
                     ) : (
                       <span>
                         {s.type === "Автоматичний збір"
-                          ? "Ще не збирався"
-                          : "Відкрити вручну ↗"}
+                          ? t("Ще не збирався")
+                          : t("Відкрити вручну ↗")}
                       </span>
                     )}
                   </div>
@@ -889,13 +955,13 @@ export default function App() {
         )}
         <footer>
           <span>
-            elektrik <span className="footer-separator">/</span> твій наступний
-            крок
+            elektrik <span className="footer-separator">/</span>
+            {t("твій наступний крок")}
           </span>
-          <span>Німеччина · Приватний доступ</span>
+          <span>{t("Німеччина · Приватний доступ")}</span>
         </footer>
       </main>
-      <nav className="mobile-nav" aria-label="Навігація телефону">
+      <nav className="mobile-nav" aria-label={t("Навігація телефону")}>
         {nav.map((n) => (
           <button
             key={n.id}
@@ -911,9 +977,9 @@ export default function App() {
       {notice && (
         <div className="toast" role="status">
           <Check size={17} />
-          {notice}
+          {t(notice)}
           <button
-            aria-label="Закрити повідомлення"
+            aria-label={t("Закрити повідомлення")}
             onClick={() => setNotice("")}
           >
             <X size={16} />
@@ -936,19 +1002,16 @@ function Select({
   onChange: (v: string) => void;
 }) {
   return (
-    <label>
-      {caption}
-      <select value={value || ""} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Усі варіанти</option>
-        {options.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Picker
+      label={caption}
+      value={value}
+      options={options}
+      multiple={options === kinds || options === categories}
+      onChange={onChange}
+    />
   );
 }
+
 function OpportunityRow({
   item: o,
   onSave,
@@ -966,7 +1029,7 @@ function OpportunityRow({
             <ArrowUpRight size={18} />
           </a>
         </h3>
-        <p className="company">{o.company}</p>
+        <p className="company">{t(o.company)}</p>
         <div className="metadata">
           <span
             className={
@@ -977,7 +1040,7 @@ function OpportunityRow({
           </span>
           <span>
             <MapPin size={14} />
-            {o.location || "Місце не вказано"}
+            {o.location || t("Місце не вказано")}
           </span>
           {o.mode !== "unknown" && (
             <span>
@@ -994,10 +1057,10 @@ function OpportunityRow({
           <span className="posted">
             {o.publishedAt
               ? date(o.publishedAt)
-              : "Знайдено " + date(o.firstSeen)}
+              : t("Знайдено ") + date(o.firstSeen)}
           </span>
         </div>
-        {o.salary && <p className="salary">{o.salary}</p>}
+        {o.salary && <p className="salary">{t(o.salary)}</p>}
         <div className="opportunity-bottom">
           <span>
             {o.source === "ba"
@@ -1005,14 +1068,14 @@ function OpportunityRow({
               : o.source === "wbs"
                 ? "WBS TRAINING"
                 : "Arbeitnow"}
-            {o.catalog ? " · каталог курсу" : ""}
+            {o.catalog ? t(" · каталог курсу") : ""}
           </span>
           <button
             className="text-button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
           >
-            {expanded ? "Згорнути" : "Деталі"}
+            {expanded ? t("Згорнути") : t("Деталі")}
             <ChevronRight
               size={14}
               style={{ transform: expanded ? "rotate(90deg)" : undefined }}
@@ -1027,16 +1090,20 @@ function OpportunityRow({
               ))}
             </div>
             <p>
-              {o.description ||
-                "Опис не надано. Відкрий оригінальне оголошення."}
+              {t(
+                o.description ||
+                  "Опис не надано. Відкрий оригінальне оголошення.",
+              )}
             </p>
             <p className="detail-disclaimer">
-              Формат: {label(modes, o.mode)}. Поїздки:{" "}
-              {label(travels, o.travel)}.{" "}
+              {t("Формат:")} {label(modes, o.mode)}
+              {t(". Поїздки:")} {label(travels, o.travel)}.{" "}
               {o.catalog
-                ? "Це сторінка курсу, а не підтверджене місце на конкретну дату. "
+                ? t(
+                    "Це сторінка курсу, а не підтверджене місце на конкретну дату. ",
+                  )
                 : ""}
-              Останнє спостереження: {date(o.lastSeen)}.
+              {t("Останнє спостереження:")} {date(o.lastSeen)}.
             </p>
             <a
               className="source-link"
@@ -1044,7 +1111,7 @@ function OpportunityRow({
               target="_blank"
               rel="noreferrer"
             >
-              Повний опис у джерелі
+              {t("Повний опис у джерелі")}
               <ExternalLink size={15} />
             </a>
           </div>
@@ -1053,7 +1120,9 @@ function OpportunityRow({
       <button
         className={"save-button " + (o.saved ? "saved" : "")}
         onClick={onSave}
-        aria-label={o.saved ? "Прибрати зі збережених" : "Зберегти " + o.title}
+        aria-label={
+          o.saved ? t("Прибрати зі збережених") : t("Зберегти ") + o.title
+        }
         aria-pressed={o.saved}
       >
         <Bookmark size={20} fill={o.saved ? "currentColor" : "none"} />
@@ -1069,19 +1138,20 @@ function Guide({ onSearch }: { onSearch: (q: string) => void }) {
     <section className="guide">
       <div className="page-title">
         <div>
-          <h1>Розберімося в назвах.</h1>
+          <h1>{t("Розберімося в назвах.")}</h1>
           <p>
-            Німецькі терміни — з поясненнями українською. Натисни професію, щоб
-            знайти можливості.
+            {t(
+              "Німецькі терміни — з поясненнями українською. Натисни професію, щоб знайти можливості.",
+            )}
           </p>
         </div>
         <BookOpen size={42} strokeWidth={1} />
       </div>
       <div className="guide-tabs">
         {[
-          ["professions", "Напрями та професії"],
-          ["types", "Типи можливостей"],
-          ["terms", "Що означають терміни"],
+          ["professions", t("Напрями та професії")],
+          ["types", t("Типи можливостей")],
+          ["terms", t("Що означають терміни")],
         ].map(([id, name]) => (
           <button
             key={id}
@@ -1097,6 +1167,9 @@ function Guide({ onSearch }: { onSearch: (q: string) => void }) {
           {categories.map((c) => (
             <article key={c.id}>
               <h2>{c.label}</h2>
+              {getLanguage() === "uk" && (
+                <p className="category-explanation">{c.ukLabel}</p>
+              )}
               <div>
                 {c.names.map((name) => (
                   <button key={name} onClick={() => onSearch(name)}>
@@ -1114,90 +1187,82 @@ function Guide({ onSearch }: { onSearch: (q: string) => void }) {
             <article key={k.id}>
               <div>
                 <h2>{k.label}</h2>
-                <span>{k.de}</span>
+                <span>{getLanguage() === "uk" ? k.ukLabel : k.de}</span>
               </div>
-              <p>{k.description}</p>
+              <p>{t(k.description)}</p>
             </article>
           ))}
         </div>
       ) : (
         <div className="terms">
           <article>
-            <h2>Elektriker чи Elektroniker?</h2>
+            <h2>{t("Elektriker чи Elektroniker?")}</h2>
             <p>
-              Elektriker — поширена загальна назва електрика у вакансіях. У
-              сучасних Ausbildungsberufe зазвичай вказують Elektroniker та
-              спеціалізацію: будівлі, промисловість, автоматизація, прилади або
-              приводи. Старі назви на кшталт Elektroinstallateur теж корисні для
-              пошуку.
+              {t(
+                "Elektriker — поширена загальна назва електрика у вакансіях. У сучасних Ausbildungsberufe зазвичай вказують Elektroniker та спеціалізацію: будівлі, промисловість, автоматизація, прилади або приводи. Старі назви на кшталт Elektroinstallateur теж корисні для пошуку.",
+              )}
             </p>
           </article>
           <article>
-            <h2>Techniker — не просто «технік»</h2>
+            <h2>{t("Techniker — не просто «технік»")}</h2>
             <p>
-              Servicetechniker може бути назвою посади. Staatlich geprüfter
-              Techniker — конкретна професійна кваліфікація. Elektrotechniker у
-              вакансії може бути широкою назвою: вимоги потрібно читати окремо.
+              {t(
+                "Servicetechniker може бути назвою посади. Staatlich geprüfter Techniker — конкретна професійна кваліфікація. Elektrotechniker у вакансії може бути широкою назвою: вимоги потрібно читати окремо.",
+              )}
             </p>
           </article>
           <article>
-            <h2>Meister, Ingenieur та Elektrofachkraft</h2>
+            <h2>{t("Meister, Ingenieur та Elektrofachkraft")}</h2>
             <p>
-              Meister — професійна кваліфікація майстра. Ingenieur — інженерний
-              напрям, зазвичай після вищої освіти. Elektrofachkraft (EFK) описує
-              фахову компетентність для конкретної сфери робіт; це не
-              універсальний дозвіл після будь-якого короткого курсу.
+              {t(
+                "Meister — професійна кваліфікація майстра. Ingenieur — інженерний напрям, зазвичай після вищої освіти. Elektrofachkraft (EFK) описує фахову компетентність для конкретної сфери робіт; це не універсальний дозвіл після будь-якого короткого курсу.",
+              )}
             </p>
           </article>
           <article>
-            <h2>EuP та EFKffT</h2>
+            <h2>{t("EuP та EFKffT")}</h2>
             <p>
-              EuP — електротехнічно проінструктована особа. EFKffT — фахівець
-              для визначених повторюваних операцій. Це різні обсяги підготовки
-              та відповідальності, які не можна прирівнювати до повної
-              професійної освіти електроніка. Обсяг дозволених робіт уточнюється
-              окремо.
+              {t(
+                "EuP — електротехнічно проінструктована особа. EFKffT — фахівець для визначених повторюваних операцій. Це різні обсяги підготовки та відповідальності, які не можна прирівнювати до повної професійної освіти електроніка. Обсяг дозволених робіт уточнюється окремо.",
+              )}
             </p>
           </article>
           <article>
-            <h2>Формат роботи — окремий фільтр</h2>
+            <h2>{t("Формат роботи — окремий фільтр")}</h2>
             <p>
-              Vollzeit, Teilzeit, Minijob — зайнятість. Unbefristet та befristet
-              — тривалість договору. Zeitarbeit — робота через кадрову агенцію.
-              Quereinstieg — перехід з іншої професії. Homeoffice, Präsenz і
-              Montage — умови виконання роботи; вони можуть поєднуватися.
+              {t(
+                "Vollzeit, Teilzeit, Minijob — зайнятість. Unbefristet та befristet — тривалість договору. Zeitarbeit — робота через кадрову агенцію. Quereinstieg — перехід з іншої професії. Homeoffice, Präsenz і Montage — умови виконання роботи; вони можуть поєднуватися.",
+              )}
             </p>
           </article>
           <article>
-            <h2>Курси й навички для ширшого пошуку</h2>
+            <h2>{t("Курси й навички для ширшого пошуку")}</h2>
             <p>
-              SPS / PLC, Siemens S7 / TIA Portal, WinCC, CODESYS, KNX, EPLAN P8,
-              CAD, MSR, DGUV V3, VDE, Schaltberechtigung, Hochvolt,
-              Photovoltaik, Windenergie, Ladeinfrastruktur, LWL / Glasfaser,
-              робототехніка та промислові мережі.
+              {t(
+                "SPS / PLC, Siemens S7 / TIA Portal, WinCC, CODESYS, KNX, EPLAN P8, CAD, MSR, DGUV V3, VDE, Schaltberechtigung, Hochvolt, Photovoltaik, Windenergie, Ladeinfrastruktur, LWL / Glasfaser, робототехніка та промислові мережі.",
+              )}
             </p>
           </article>
           <article>
-            <h2>Фінансування і допуск</h2>
+            <h2>{t("Фінансування і допуск")}</h2>
             <p>
-              Bildungsgutschein, AZAV, Aufstiegs-BAföG, Berufssprachkurs та
-              Anerkennung — додаткові умови або програми, а не гарантія
-              безкоштовного навчання чи вступу. Перевіряй конкретний курс,
-              вимоги та рішення відповідної установи.
+              {t(
+                "Bildungsgutschein, AZAV, Aufstiegs-BAföG, Berufssprachkurs та Anerkennung — додаткові умови або програми, а не гарантія безкоштовного навчання чи вступу. Перевіряй конкретний курс, вимоги та рішення відповідної установи.",
+              )}
             </p>
           </article>
         </div>
       )}
       <div className="references">
-        <h2>Перевірені першоджерела</h2>
+        <h2>{t("Перевірені першоджерела")}</h2>
         <p>
-          Досліджено 10 вересня 2026. Довідник об’єднує офіційні професії,
-          поширені назви посад і суміжні спеціалізації; це не перелік
-          рівнозначних дипломів.
+          {t(
+            "Досліджено 10 вересня 2026. Довідник об’єднує офіційні професії, поширені назви посад і суміжні спеціалізації; це не перелік рівнозначних дипломів.",
+          )}
         </p>
         {references.map((r) => (
           <a key={r.url} href={r.url} target="_blank" rel="noreferrer">
-            {r.name}
+            {t(r.name)}
             <ArrowUpRight size={14} />
           </a>
         ))}
