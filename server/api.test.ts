@@ -8,7 +8,7 @@ import { config } from "./config.js";
 import { normalize } from "./classify.js";
 test("API enforces private session, origin checks, persistent saves and logout", async () => {
   const old = config.password;
-  config.password = "a-test-password-with-30-characters";
+  config.password = "246810";
   const store = new Store(":memory:");
   const row = normalize({
     title: "Elektriker",

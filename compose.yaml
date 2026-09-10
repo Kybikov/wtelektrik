@@ -9,7 +9,7 @@ services:
       BOTTOKEN: ${BOTTOKEN:?Set the Telegram bot token}
       TELEGRAM_OWNER_IDS: ${TELEGRAM_OWNER_IDS:?Set allowed Telegram user IDs}
       BOT_ENABLED: ${BOT_ENABLED:-true}
-      WEB_PASSWORD: ${WEB_PASSWORD:?Set a private web password of at least 20 characters}
+      WEB_PASSWORD: ${WEB_PASSWORD:?Set a private web password of at least 6 characters}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:4317}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       COLLECT_INTERVAL_MINUTES: ${COLLECT_INTERVAL_MINUTES:-120}

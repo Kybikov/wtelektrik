@@ -43,18 +43,18 @@ mein NOW, Siemens SITRAIN, IHK/HWK, Hochschulkompass, TÜV, Anerkennung — пе
 
 ## Приватне розміщення / Coolify
 
-`compose.yaml` — production-стек, `compose.local.yaml` додає локальний порт. Змінні передаються через Coolify або `docker compose --env-file .env.local -f compose.yaml -f compose.local.yaml up -d --build`. Перед локальним Docker-запуском установи `WEB_PASSWORD` (мінімум 20 символів). За reverse proxy використовується production Compose без локального override. Docker healthcheck перевіряє внутрішній порт 4317; зовнішні порти production-стек не публікує.
+`compose.yaml` — production-стек, `compose.local.yaml` додає локальний порт. Змінні передаються через Coolify або `docker compose --env-file .env.local -f compose.yaml -f compose.local.yaml up -d --build`. Перед локальним Docker-запуском установи `WEB_PASSWORD` (мінімум 6 символів). За reverse proxy використовується production Compose без локального override. Docker healthcheck перевіряє внутрішній порт 4317; зовнішні порти production-стек не публікує.
 
 Готовий Dockerfile, healthcheck `/api/health`, постійний volume `/app/runtime`. Зовнішнє розміщення потребує окремого домену/ресурсу: цей проєкт не додається до WTBackend.
 
 1. Створи окремий сервіс із цим Dockerfile, порт 4317.
 2. Передай `BOTTOKEN`, `TELEGRAM_OWNER_IDS`, `BOT_ENABLED=true` через secrets/env.
-3. Встанови довгий випадковий `WEB_PASSWORD` (мінімум 20 символів), `HOST=0.0.0.0`, `PUBLIC_URL=https://твій-домен`, `COOKIE_SECURE=true` за HTTPS reverse proxy.
+3. Встанови довгий випадковий `WEB_PASSWORD` (мінімум 6 символів), `HOST=0.0.0.0`, `PUBLIC_URL=https://твій-домен`, `COOKIE_SECURE=true` за HTTPS reverse proxy.
 4. Підключи постійний volume `/app/runtime`. Не включай `.env.local` у Docker image або Git.
 5. Зупини локальний бот, перш ніж запускати серверний, щоб уникнути Telegram 409 Conflict.
 6. Перевір health, вхід на сайт, `/start` з дозволеного ID та журнал збору.
 
-Без `WEB_PASSWORD` API допускає лише прямі loopback-запити з локальним Host. Для мережевого bind без довгого пароля запуск відхиляється. Сесії HttpOnly/SameSite, пароль порівнюється за хешем у сталий час, є обмеження спроб входу та перевірка Origin. HTTPS забезпечує reverse proxy. Закладки та історія — локальні в SQLite; резервуй весь volume штатним SQLite backup або під час зупинки сервісу.
+Без `WEB_PASSWORD` API допускає лише прямі loopback-запити з локальним Host. Для мережевого bind із паролем коротшим за 6 символів запуск відхиляється. Сесії HttpOnly/SameSite, пароль порівнюється за хешем у сталий час, є обмеження спроб входу та перевірка Origin. HTTPS забезпечує reverse proxy. Закладки та історія — локальні в SQLite; резервуй весь volume штатним SQLite backup або під час зупинки сервісу.
 
 ## Структура
 

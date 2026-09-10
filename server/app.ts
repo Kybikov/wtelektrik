@@ -38,7 +38,7 @@ export function createApp(store: Store, collector: Collector, bot: Bot) {
   const authorized = (req: express.Request) =>
     !config.password ? localRequest(req) : hasSession(store, req);
   app.get("/api/health", (_req, res) =>
-    res.json({ ok: true, version: "0.1.0" }),
+    res.json({ ok: true, version: "0.1.1" }),
   );
   app.get("/api/session", (req, res) =>
     res.json({ authenticated: authorized(req), local: !config.password }),

@@ -5,10 +5,10 @@ import { Bot } from "./bot.js";
 import { createApp } from "./app.js";
 if (
   !["127.0.0.1", "localhost", "::1"].includes(config.host) &&
-  config.password.length < 20
+  config.password.length < 6
 )
   throw new Error(
-    "Для мережевого доступу потрібен WEB_PASSWORD довжиною щонайменше 20 символів.",
+    "Для мережевого доступу потрібен WEB_PASSWORD довжиною щонайменше 6 символів.",
   );
 const store = new Store(config.dbPath),
   collector = new Collector(store),
